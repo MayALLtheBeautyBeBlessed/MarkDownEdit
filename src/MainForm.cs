@@ -59,12 +59,50 @@ namespace Lanyu
             }
         }
 
+        /* 判断这次启动是否该注册文件关联 */
+        private static bool ShouldRegisterAssoc(string[] args)
+        {
+            // 自动化/导出模式不碰注册表
+            foreach (var a in args)
+            {
+                if (a == null) continue;
+                if (a.StartsWith("--shot", StringComparison.OrdinalIgnoreCase) ||
+                    a.StartsWith("--eval", StringComparison.OrdinalIgnoreCase) ||
+                    a.StartsWith("--pdf", StringComparison.OrdinalIgnoreCase) ||
+                    a.StartsWith("--docx", StringComparison.OrdinalIgnoreCase)) return false;
+            }
+
+            // 临时目录里跑的（比如解压后直接双击、或从压缩包内启动）也不注册
+            try
+            {
+                var exe = Application.ExecutablePath;
+                var temp = Path.GetTempPath();
+                var localTemp = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp");
+                if (!string.IsNullOrEmpty(temp) && exe.StartsWith(temp, StringComparison.OrdinalIgnoreCase)) return false;
+                if (!string.IsNullOrEmpty(localTemp) && exe.StartsWith(localTemp, StringComparison.OrdinalIgnoreCase)) return false;
+                if (exe.IndexOf(@"\AppData\Local\Temp\", StringComparison.OrdinalIgnoreCase) >= 0) return false;
+                if (exe.IndexOf(@"\Temp\", StringComparison.OrdinalIgnoreCase) >= 0) return false;
+            }
+            catch { }
+
+            return true;
+        }
         [STAThread]
         private static void Main(string[] args)
         {
             DataDir = ResolveDataDir();
             Log("=== start: " + string.Join(" ", args));
-            try { Assoc.Register(); } catch (Exception ex) { Log("assoc auto fail: " + ex.Message); }
+            // 只在「真正的安装位置」注册关联：
+            // 从临时目录跑（含解压后直接双击）或自动化测试时不要抢关联，否则会把
+            // DefaultIcon 指到临时路径，Windows 清掉临时目录后图标就变成别的程序的了
+            if (ShouldRegisterAssoc(args))
+            {
+                try { Assoc.Register(); } catch (Exception ex) { Log("assoc auto fail: " + ex.Message); }
+            }
+            else
+            {
+                Log("assoc skipped (temp path or test flags)");
+            }
             AppDomain.CurrentDomain.UnhandledException += (s, e) => Log("UNHANDLED: " + e.ExceptionObject);
             Application.ThreadException += (s, e) => Log("THREAD EXC: " + e.Exception);
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
