@@ -1,0 +1,377 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<title>MarkEdit</title>
+<link rel="stylesheet" href="vendor/katex.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div id="bgLayer"></div>
+
+<div id="app">
+
+  <!-- ── 菜单栏 ───────────────────────────────────────── -->
+  <header class="menubar">
+    <button class="iconbtn" id="btnSidebar" title="侧边栏  Ctrl+Shift+L">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+    </button>
+
+    <nav class="menus" id="menus"></nav>
+
+    <div class="mb-title">
+      <span class="docname" id="docName">未命名</span>
+      <span class="docpath" id="docPath">尚未保存</span>
+    </div>
+
+    <div class="mb-right">
+      <div class="segmented" id="viewSwitch">
+        <button data-view="wysiwyg" class="active" title="即时渲染">即时</button>
+        <button data-view="split" title="双栏">双栏</button>
+        <button data-view="source" title="源码模式  Ctrl+/">源码</button>
+        <button data-view="preview" title="阅读模式">阅读</button>
+      </div>
+      <button class="iconbtn" id="btnFullscreen" title="全屏 / 退出全屏  F11">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+      <button class="iconbtn" id="btnTheme" title="切换主题">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9 7 7 0 01-9-9z"/></svg>
+      </button>
+      <button class="iconbtn" id="btnSettings" title="设置">
+        <svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+      </button>
+      <button class="iconbtn" id="btnHelp" title="快捷键 F1">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 014.8.9c0 1.7-2.4 2-2.4 3.6"/><path d="M12 17h.01"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── 标签页 ───────────────────────────────────────── -->
+  <div class="tabbar" id="tabbar"></div>
+
+  <!-- ── 工作区 ───────────────────────────────────────── -->
+  <div class="workspace" id="workspace">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="side-tabs">
+        <button class="side-tab active" data-tab="outline">大纲</button>
+        <button class="side-tab" data-tab="files">文件</button>
+        <button class="side-mini" id="btnFolder" title="打开文件夹">
+          <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        </button>
+      </div>
+      <div class="side-body" id="outlineList"></div>
+      <div class="side-body hidden" id="fileTree"></div>
+      <div class="side-foot"><span id="sideHint">Ctrl+点击标题可跳转</span></div>
+      <div class="side-resizer" id="sideResizer" title="拖动调整侧栏宽度"></div>
+    </aside>
+
+    <section class="panes" id="panes">
+      <div class="pane pane-source" id="sourcePane">
+        <div class="gutter" id="gutter"></div>
+        <div class="codearea">
+          <pre class="hl" id="hl" aria-hidden="true"></pre>
+          <textarea id="editor" spellcheck="false" wrap="soft" placeholder="在这里开始写……"></textarea>
+        </div>
+      </div>
+      <div class="splitter" id="splitter"></div>
+      <div class="pane pane-preview" id="previewPane">
+        <article class="preview" id="preview"></article>
+      </div>
+      <div class="pane pane-wy" id="wyPane">
+        <article class="preview wy-doc" id="wyDoc"></article>
+      </div>
+    </section>
+  </div>
+
+  <footer class="statusbar">
+    <div class="sb-left">
+      <span id="stState" class="sb-item">就绪</span>
+      <span class="sb-dot">·</span>
+      <span id="stSaved" class="sb-item">未保存</span>
+    </div>
+    <div class="sb-right">
+      <span class="sb-item" id="stWords">0 字</span>
+      <span class="sb-dot">·</span>
+      <span class="sb-item" id="stChars">0 字符</span>
+      <span class="sb-dot">·</span>
+      <span class="sb-item" id="stCursor">行 1，列 1</span>
+      <span class="sb-dot">·</span>
+      <span class="sb-item" id="stRead">0 分钟</span>
+      <span class="sb-dot">·</span>
+      <span class="sb-item">UTF-8</span>
+      <span class="sb-dot">·</span>
+      <span class="sb-item" id="stZoom">100%</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ── 欢迎页 ─────────────────────────────────────────── -->
+<div class="welcome" id="welcome">
+  <div class="welcome-inner">
+    <div class="welcome-mark">M</div>
+    <h1>MarkEdit</h1>
+    <p class="welcome-sub">一个安静的 Markdown 编辑器</p>
+    <div class="welcome-actions">
+      <button class="wbtn primary" id="wNew">新建文档 <kbd>Ctrl N</kbd></button>
+      <button class="wbtn" id="wOpen">打开文件 <kbd>Ctrl O</kbd></button>
+      <button class="wbtn" id="wFolder">打开文件夹</button>
+    </div>
+    <div class="welcome-recent">
+      <div class="wr-title">最近打开</div>
+      <div id="recentList" class="wr-list"></div>
+    </div>
+    
+  </div>
+</div>
+
+<!-- ── 查找条 ─────────────────────────────────────────── -->
+<div class="findbar" id="findbar">
+  <input id="findInput" placeholder="查找…" spellcheck="false">
+  <span class="find-count" id="findCount">0/0</span>
+  <button class="fb-btn" id="findPrev" title="上一个 Shift+Enter">↑</button>
+  <button class="fb-btn" id="findNext" title="下一个 Enter">↓</button>
+  <input id="replaceInput" placeholder="替换为…" spellcheck="false">
+  <button class="fb-btn" id="replaceOne" title="替换">替换</button>
+  <button class="fb-btn" id="replaceAll" title="全部替换">全部</button>
+  <button class="fb-btn close" id="findClose" title="关闭 Esc">✕</button>
+</div>
+
+<!-- ── 设置 ───────────────────────────────────────────── -->
+<div class="modal" id="settingsModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>设置</h2>
+      <button class="iconbtn" id="settingsClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="set-preview">
+        <div class="sp-title">实时预览</div>
+        <div class="sp-body">
+          <h3>愿我如星君如月</h3>
+          <p><strong>夜夜流光相皎洁。</strong>月暂晦，星常明。
+            留明待月复，<em>三五共盈盈</em>。<code>Ctrl+1</code> 到 <code>Ctrl+6</code> 可调标题级别。</p>
+          <blockquote>最是人间留不住，朱颜辞镜花辞树。</blockquote>
+        </div>
+      </div>
+      <div class="set-row">
+        <label>主题</label>
+        <div class="chips" id="setTheme">
+          <button data-v="light">浅色</button><button data-v="dark">深色</button>
+          <button data-v="sepia">护眼</button><button data-v="night">夜蓝</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <label>正文字体</label>
+        <div class="chips" id="setFont">
+          <button data-v="sans">无衬线</button><button data-v="serif">衬线</button><button data-v="mono">等宽</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <label>字号 <span class="val" id="valSize">15px</span></label>
+        <input type="range" id="setSize" min="12" max="24" step="1">
+      </div>
+      <div class="set-row">
+        <label>正文颜色</label>
+        <div class="color-field">
+          <input type="color" id="setTextColor" title="选取颜色">
+          <input type="text" id="setTextColorHex" maxlength="7" placeholder="#24292F" spellcheck="false">
+          <button class="wbtn" id="textColorReset">跟随主题</button>
+        </div>
+        <div class="hint" style="margin-top:6px">支持 #RGB / #RRGGBB；留空则跟随主题</div>
+      </div>
+      <div class="set-row">
+        <label>行宽 <span class="val" id="valWidth">780px</span></label>
+        <input type="range" id="setWidth" min="560" max="1200" step="20">
+      </div>
+      <div class="set-row">
+        <label>行高 <span class="val" id="valLh">1.75</span></label>
+        <input type="range" id="setLh" min="1.3" max="2.2" step="0.05">
+      </div>
+      <div class="set-row switch-row">
+        <label>段落内换行视为换行</label>
+        <label class="switch"><input type="checkbox" id="setSoftBreak"><span></span></label>
+      </div>
+      <div class="set-row switch-row">
+        <label>显示行号</label>
+        <label class="switch"><input type="checkbox" id="setLineNo"><span></span></label>
+      </div>
+      <div class="set-row switch-row">
+        <label>自动保存</label>
+        <label class="switch"><input type="checkbox" id="setAutoSave"><span></span></label>
+      </div>
+      <div class="set-row">
+        <label>自动保存间隔</label>
+        <div class="num-field">
+          <input type="number" id="setAutoSaveSec" min="1" max="600" step="1">
+          <span class="unit">秒</span>
+          <span class="hint">停止输入后多久写盘，1–600</span>
+        </div>
+      </div>
+      <div class="set-section">背景图片</div>
+      <div class="set-row">
+        <label>当前图片</label>
+        <div class="bg-picker">
+          <div class="bg-thumb" id="bgThumb">未设置</div>
+          <div class="bg-picker-btns">
+            <button class="wbtn" id="bgPick">选择图片</button>
+            <button class="wbtn" id="bgClear">清除背景</button>
+          </div>
+        </div>
+      </div>
+      <div class="set-row">
+        <label>不透明度 <span class="val" id="valBgOpacity">35%</span></label>
+        <input type="range" id="setBgOpacity" min="0" max="100" step="1">
+      </div>
+      <div class="set-row">
+        <label>模糊 <span class="val" id="valBgBlur">0 px</span></label>
+        <input type="range" id="setBgBlur" min="0" max="24" step="1">
+      </div>
+      <div class="set-row">
+        <label>暗化 <span class="val" id="valBgDim">0%</span></label>
+        <input type="range" id="setBgDim" min="0" max="80" step="1">
+      </div>
+      <div class="set-row">
+        <label>填充方式</label>
+        <div class="chips" id="setBgSize">
+          <button data-v="cover">铺满</button><button data-v="contain">完整</button><button data-v="auto">原始</button>
+        </div>
+      </div>
+      <div class="set-row switch-row">
+        <label>平铺</label>
+        <label class="switch"><input type="checkbox" id="setBgRepeat"><span></span></label>
+      </div>
+      <div class="set-row">
+        <label>侧栏 / 工具栏不透明度 <span class="val" id="valPanelAlpha">45%</span></label>
+        <input type="range" id="setPanelAlpha" min="0" max="100" step="5">
+      </div>
+      <div class="set-row switch-row">
+        <label>毛玻璃效果（磨砂）</label>
+        <label class="switch"><input type="checkbox" id="setPanelBlur"><span></span></label>
+      </div>
+      <div class="set-section">数据</div>
+      <div class="set-row">
+        <label>配置与数据目录</label>
+        <div class="path-field">
+          <code id="dataDirPath">读取中…</code>
+          <button class="wbtn" id="openDataDir">打开目录</button>
+        </div>
+        <div class="hint" id="dataDirWarn" style="display:none;color:#d9534f;margin-top:6px">
+          检测到程序运行在临时目录（多半是直接双击了压缩包里的 exe），设置不会被保留。请先把整个文件夹解压出来再运行。
+        </div>
+      </div>
+      <div class="set-section">全屏</div>
+      <div class="set-row switch-row">
+        <label>全屏时隐藏窗口边框</label>
+        <label class="switch"><input type="checkbox" id="setFsBorderless"><span></span></label>
+      </div>
+      <div class="set-row switch-row">
+        <label>滚动同步</label>
+        <label class="switch"><input type="checkbox" id="setSync"><span></span></label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="wbtn" id="settingsReset">恢复默认</button>
+      <span class="modal-note">MarkEdit 6.6 · 改动即时生效</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── 插入表格 ───────────────────────────────────────── -->
+<div class="modal" id="tableModal">
+  <div class="modal-card tiny">
+    <div class="modal-head"><h2>插入表格</h2></div>
+    <div class="modal-body">
+      <div class="tbl-row">
+        <label>列 <input type="number" id="tblCols" min="1" max="12" value="3"></label>
+        <label>行 <input type="number" id="tblRows" min="1" max="50" value="4"></label>
+      </div>
+    </div>
+    <div class="modal-foot tbl-foot">
+      <button class="wbtn" id="tblCancel">取消</button>
+      <button class="wbtn primary" id="tblOk">确定</button>
+    </div>
+  </div>
+</div>
+<!-- ── 关闭确认 ───────────────────────────────────────── -->
+<div class="modal close-modal" id="closeModal">
+  <div class="modal-card small">
+    <div class="modal-head">
+      <h2>关闭前保留更改？</h2>
+    </div>
+    <div class="modal-body">
+      <p class="close-text" id="closeText">「未命名」有未保存的修改。</p>
+      <p class="hint" id="closeHint"></p>
+    </div>
+    <div class="modal-foot close-foot">
+      <button class="wbtn" id="closeCancel">取消</button>
+      <button class="wbtn danger" id="closeDiscard">不保存</button>
+      <button class="wbtn primary" id="closeSave">保存并关闭</button>
+    </div>
+  </div>
+</div>
+<!-- ── 快捷键 ─────────────────────────────────────────── -->
+<div class="modal help-modal" id="helpModal">
+  <div class="modal-card help-card">
+    <div class="modal-head">
+      <h2>快捷键</h2>
+      <button class="iconbtn" id="helpClose" title="关闭 Esc">✕</button>
+    </div>
+    <div class="modal-body help-body">
+      <div class="help-grid">
+        <section>
+          <h3>文件与标签页</h3>
+          <div class="hk"><span>新建</span><kbd>Ctrl</kbd><kbd>N</kbd></div>
+          <div class="hk"><span>打开文件</span><kbd>Ctrl</kbd><kbd>O</kbd></div>
+          <div class="hk"><span>保存</span><kbd>Ctrl</kbd><kbd>S</kbd></div>
+          <div class="hk"><span>另存为</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>S</kbd></div>
+          <div class="hk"><span>关闭标签页</span><kbd>Ctrl</kbd><kbd>W</kbd></div>
+          <div class="hk"><span>切换标签页</span><kbd>Ctrl</kbd><kbd>Tab</kbd></div>
+        </section>
+        <section>
+          <h3>段落</h3>
+          <div class="hk"><span>一级～六级标题</span><kbd>Ctrl</kbd><kbd>1-6</kbd></div>
+          <div class="hk"><span>正文段落</span><kbd>Ctrl</kbd><kbd>0</kbd></div>
+          <div class="hk"><span>提升 / 降低标题级别</span><kbd>Ctrl</kbd><kbd>+/-</kbd></div>
+          <div class="hk"><span>引用</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>Q</kbd></div>
+          <div class="hk"><span>代码块 / 公式块</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>K/M</kbd></div>
+          <div class="hk"><span>有序 / 无序 / 任务列表</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>[ ] X</kbd></div>
+        </section>
+        <section>
+          <h3>格式</h3>
+          <div class="hk"><span>加粗</span><kbd>Ctrl</kbd><kbd>B</kbd></div>
+          <div class="hk"><span>斜体</span><kbd>Ctrl</kbd><kbd>I</kbd></div>
+          <div class="hk"><span>删除线</span><kbd>Alt</kbd><kbd>Shift</kbd><kbd>5</kbd></div>
+          <div class="hk"><span>行内代码</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>`</kbd></div>
+          <div class="hk"><span>链接</span><kbd>Ctrl</kbd><kbd>K</kbd></div>
+          <div class="hk"><span>清除格式</span><kbd>Ctrl</kbd><kbd>\</kbd></div>
+        </section>
+        <section>
+          <h3>视图与其它</h3>
+          <div class="hk"><span>源码模式</span><kbd>Ctrl</kbd><kbd>/</kbd></div>
+          <div class="hk"><span>显示 / 隐藏侧栏</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>L</kbd></div>
+          <div class="hk"><span>查找 / 替换</span><kbd>Ctrl</kbd><kbd>F / H</kbd></div>
+          <div class="hk"><span>全屏</span><kbd>F11</kbd></div>
+          <div class="hk"><span>快捷键说明</span><kbd>F1</kbd></div>
+          <div class="hk"><span>关闭弹层</span><kbd>Esc</kbd></div>
+        </section>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="modal-note">菜单里也能找到全部命令 · 表格里 Enter 加行、Shift+Enter 换行、方向键移格、边缘方向键跳出</span>
+    </div>
+  </div>
+</div>
+
+<div class="ctxmenu" id="ctxmenu"></div>
+<div class="toast" id="toast"></div>
+
+<script src="vendor/katex.js"></script>
+<script src="markdown.js"></script>
+<script src="editor2.js"></script>
+<script src="export.js"></script>
+<script src="menus.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
