@@ -1,4 +1,4 @@
-# 构建产物
+﻿# 构建产物
 build/
 dist/
 *.zip
@@ -14,3 +14,6 @@ shots/
 imgdemo/
 tools/
 *.bak
+
+# 打包与发布脚本要入库
+!scripts/
