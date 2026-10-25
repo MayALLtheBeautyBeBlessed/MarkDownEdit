@@ -1,5 +1,5 @@
 /* ============================================================
-   MarkEdit —— 应用逻辑
+   Lanyu —— 应用逻辑
    ============================================================ */
 (function () {
   'use strict';
@@ -190,7 +190,7 @@ case 'info':
           toast(m.ok ? '已注册到「打开方式」' : '注册失败，见日志');
           break;
         case 'assocDefault':
-          toast(m.ok ? '已把 .md 的默认程序设为 MarkEdit' : '设置失败，见日志', 2600);
+          toast(m.ok ? '已把 .md 的默认程序设为 Lanyu' : '设置失败，见日志', 2600);
           break;
         case 'bgpicked':
           state.prefs.bgImage = m.path;
@@ -221,7 +221,7 @@ case 'info':
 
   /* ---------------- 超时保护：没有宿主时用示例文档 ---------------- */
   const DEMO = [
-    '# MarkEdit',
+    '# Lanyu',
     '',
     '> 一个安静的 Markdown 编辑器。左边是源码，右边是它现在的样子。',
     '',
@@ -558,8 +558,8 @@ function switchTab(dir) {
     el.docName.innerHTML = escapeHtml(state.name) + dirty;
     el.docPath.textContent = state.path || '尚未保存';
     el.docPath.title = state.path || '';
-    document.title = state.name + ' — MarkEdit';
-    post({ cmd: 'setTitle', title: state.name + (state.dirty ? ' •' : '') + ' — MarkEdit' });
+    document.title = state.name + ' — Lanyu';
+    post({ cmd: 'setTitle', title: state.name + (state.dirty ? ' •' : '') + ' — Lanyu' });
     if (el.tabbar) renderTabs();
   }
 
@@ -919,7 +919,7 @@ function switchTab(dir) {
   function doSave(silentAuto) {
     if (!state.path) {
       if (silentAuto) {
-        try { localStorage.setItem('markedit.draft', JSON.stringify({ name: state.name, content: state.content, at: Date.now() })); } catch (e) { }
+        try { localStorage.setItem('lanyu.draft', JSON.stringify({ name: state.name, content: state.content, at: Date.now() })); } catch (e) { }
         return;
       }
       const t0 = activeTab();
@@ -1376,7 +1376,7 @@ function openHelp(show) {
       case 'typewriter': return toggleTypewriter();
       case 'settings': return openSettings(true);
       case 'help': return openHelp(true);
-      case 'about': return toast('MarkEdit 1.6 · 本地 Markdown 编辑器');
+      case 'about': return toast('Lanyu 7.0 · 本地 Markdown 编辑器');
     }
   }
 
@@ -1906,5 +1906,5 @@ function openHelp(show) {
   else boot();
 
   // 暴露给宿主自检
-  window.__markedit = { state, openContent, setView, save: doSave, cmd, doAction, openTableDialog, renderPreview, startPrint, endPrint, get wy() { return wy; }, exportModel: () => JSON.stringify(window.ExportModel.build(state.content)) };
+  window.__lanyu = window.__markedit = { state, openContent, setView, save: doSave, cmd, doAction, openTableDialog, renderPreview, startPrint, endPrint, get wy() { return wy; }, exportModel: () => JSON.stringify(window.ExportModel.build(state.content)) };
 })();

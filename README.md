@@ -1,12 +1,14 @@
-﻿# MarkEdit 6.6
+# Lanyu 7.0
 
 > 一个安静的 Markdown 编辑器。单文件、离线、解压即用。
+
+> 原名 MarkEdit，7.0 起改名为 **Lanyu**（避免与 macOS 上一个同名编辑器混淆）。仓库地址与配置不受影响。
 
 **[下载最新版](https://github.com/MayALLtheBeautyBeBlessed/MarkDownEdit/releases/latest)** · 源码在 `src/` `web/`，构建方式见文末
 
 一个安静的 Markdown 编辑器，Windows 原生窗口 + WebView2 内核，**Typora 式的即时渲染**：光标所在的段落显示原始 Markdown，其余段落直接显示排版结果。
 
-双击 `MarkEdit.exe` 即可使用，**免安装、不联网、不加载任何远程资源**（公式的 KaTeX 也是本地内置的）。
+双击 `Lanyu.exe` 即可使用，**免安装、不联网、不加载任何远程资源**（公式的 KaTeX 也是本地内置的）。
 
 ---
 
@@ -67,7 +69,7 @@
 **1.9 新增**
 
 - **窗口 / 任务栏图标**改成蓝底白 M（之前标题栏是 .NET 的默认图标，因为没显式设置 `Form.Icon`）
-- **注册到「打开方式」**：启动时自动写一次注册表（`HKCU\Software\Classes`，不需要管理员），之后右键任意 `.md` → 打开方式里就能看到 MarkEdit；菜单「文件 → 注册到「打开方式」」可以手动重注册（搬动文件夹后点一下即可刷新路径）。想设为默认：右键 → 打开方式 → 选择其他应用 → MarkEdit → 勾选「始终使用」。
+- **注册到「打开方式」**：启动时自动写一次注册表（`HKCU\Software\Classes`，不需要管理员），之后右键任意 `.md` → 打开方式里就能看到 Lanyu；菜单「文件 → 注册到「打开方式」」可以手动重注册（搬动文件夹后点一下即可刷新路径）。想设为默认：右键 → 打开方式 → 选择其他应用 → Lanyu → 勾选「始终使用」。
 
 **1.9.1 修正**
 
@@ -441,7 +443,7 @@ C# 侧用 `JavaScriptSerializer` 把文件内容发给前端，它的 `MaxJsonLe
 
 **6.0 修正**
 
-- **md 默认图标回到我们**：之前只做了"注册到打开方式"（写 `OpenWithProgids`），没设 `.md` 的默认 ProgID，所以 Windows 仍用别的程序、图标自然也是别人的。现在启动时会确保 `HKCU\Software\Classes\.md` 指向 `MarkEdit.md`；若被资源管理器的 `UserChoice` 压住，可用 **文件 → 设为 .md 默认程序**（会清掉 UserChoice 并刷新）
+- **md 默认图标回到我们**：之前只做了"注册到打开方式"（写 `OpenWithProgids`），没设 `.md` 的默认 ProgID，所以 Windows 仍用别的程序、图标自然也是别人的。现在启动时会确保 `HKCU\Software\Classes\.md` 指向 `Lanyu.md`；若被资源管理器的 `UserChoice` 压住，可用 **文件 → 设为 .md 默认程序**（会清掉 UserChoice 并刷新）
 - **裸链接识别**：原来要求链接前面是空格或括号，中文里"访问https://x.com看看"识别不到。现在允许紧贴中文，且 URL 本体只吃 ASCII 字符（遇到"看看"自动停）
 - **公式块编辑后就地渲染**：以前点进公式块会把 `<div class="math-block">` 换成 `<pre>`，退出时再换回来；如果失焦没触发（比如点到窗口外），就停在"一段 TeX 源码"的状态。现在**始终是同一个 div**：点进去 `contenteditable=true` 显示 TeX，退出就地渲染 KaTeX，另外选区一离开就自动提交
 
@@ -671,7 +673,7 @@ C# 侧用 `JavaScriptSerializer` 把文件内容发给前端，它的 `MaxJsonLe
 ## 八、常见问题
 
 **设置为什么每次打开都要重来？**
-所有设置都存在 `<程序目录>\data\prefs.json`。如果程序目录是只读的，会退到 `%LOCALAPPDATA%\MarkEdit`。但如果**直接在压缩包里双击 exe**，Windows 会把它解到临时目录运行，设置自然一次性——设置里「数据目录」那一栏能直接看到实际路径，路径在 `Temp` 下就是这个问题。解压到固定文件夹再用即可。
+所有设置都存在 `<程序目录>\data\prefs.json`。如果程序目录是只读的，会退到 `%LOCALAPPDATA%\Lanyu`。但如果**直接在压缩包里双击 exe**，Windows 会把它解到临时目录运行，设置自然一次性——设置里「数据目录」那一栏能直接看到实际路径，路径在 `Temp` 下就是这个问题。解压到固定文件夹再用即可。
 
 **撤销能退多少步？**
 **200 步**（`Ctrl+Z`）。步数按「编辑动作」算：连续打字会在停顿约 0.7 秒后合并成一步，回车拆段、改标题级别、插入表格这类结构性操作各算一步。
@@ -688,8 +690,8 @@ C# 侧用 `JavaScriptSerializer` 把文件内容发给前端，它的 `MaxJsonLe
 
 ```
 MarkDownEdit\
-├─ dist\MarkEdit-6.6\         ← 可直接运行的程序
-│  ├─ MarkEdit.exe            主程序（约 105 KB）
+├─ dist\Lanyu-6.6\         ← 可直接运行的程序
+│  ├─ Lanyu.exe            主程序（约 105 KB）
 │  ├─ WebView2Loader.dll
 │  ├─ Microsoft.Web.WebView2.Core.dll
 │  ├─ Microsoft.Web.WebView2.WinForms.dll
@@ -709,7 +711,7 @@ MarkDownEdit\
 
 **依赖**：Windows 10/11 自带的 WebView2 运行时。配置、最近文件、背景图、缓存都在程序目录的 `data\`。
 
-**便携性**：整个文件夹拷走即可迁移；放在无写入权限的目录时会改用 `%LOCALAPPDATA%\MarkEdit`。
+**便携性**：整个文件夹拷走即可迁移；放在无写入权限的目录时会改用 `%LOCALAPPDATA%\Lanyu`。
 **我说你**
 
 ## 许可

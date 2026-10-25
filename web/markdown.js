@@ -1,5 +1,5 @@
 /* ============================================================
-   MarkEdit · Markdown 渲染内核（无依赖、离线）
+   Lanyu · Markdown 渲染内核（无依赖、离线）
    暴露：window.MD.render(src, opts) / MD.outline(src) / MD.highlight(code, lang)
    ============================================================ */
 (function (global) {

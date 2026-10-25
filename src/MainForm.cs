@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -13,7 +13,7 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace MarkEdit
+namespace Lanyu
 {
     internal static class Program
     {
@@ -53,7 +53,7 @@ namespace MarkEdit
             catch
             {
                 var fallback = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MarkEdit");
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lanyu");
                 Directory.CreateDirectory(fallback);
                 return fallback;
             }
@@ -77,7 +77,7 @@ namespace MarkEdit
             catch (Exception ex)
             {
                 Log("FATAL: " + ex);
-                MessageBox.Show(ex.ToString(), "MarkEdit 启动失败");
+                MessageBox.Show(ex.ToString(), "Lanyu 启动失败");
             }
         }
     }
@@ -123,7 +123,7 @@ internal string CurrentPath;
                     _startupFile = a;
             }
 
-            Text = "MarkEdit";
+            Text = "Lanyu";
             MinimumSize = new Size(820, 520);
             ClientSize = new Size(1360, 860);
             StartPosition = FormStartPosition.CenterScreen;
@@ -190,7 +190,7 @@ internal string CurrentPath;
                 var index = Path.Combine(Program.WebDir, "index.html");
                 if (!File.Exists(index))
                 {
-                    MessageBox.Show("找不到 web\\index.html，程序不完整。", "MarkEdit");
+                    MessageBox.Show("找不到 web\\index.html，程序不完整。", "Lanyu");
                     Close();
                     return;
                 }
@@ -227,7 +227,7 @@ internal string CurrentPath;
                     {
                         try
                         {
-                            var raw = await core.ExecuteScriptAsync("window.__markedit.exportModel()");
+                            var raw = await core.ExecuteScriptAsync("window.__lanyu.exportModel()");
                             var json = _json.Deserialize<string>(raw);
                             var model = _json.Deserialize<Dictionary<string, object>>(json);
                             var dir = string.IsNullOrEmpty(_startupFile) ? Program.AppDir : Path.GetDirectoryName(_startupFile);
@@ -245,7 +245,7 @@ internal string CurrentPath;
                         var ps = core.Environment.CreatePrintSettings();
                         ps.ShouldPrintBackgrounds = true;
                         ps.ShouldPrintHeaderAndFooter = false;
-                        await core.ExecuteScriptAsync("window.__markedit.startPrint()");
+                        await core.ExecuteScriptAsync("window.__lanyu.startPrint()");
                         await Task.Delay(300);
                         var okPdf = await core.PrintToPdfAsync(_pdfPath, ps);
                         Program.Log("pdf=" + okPdf + " -> " + _pdfPath);
@@ -326,12 +326,12 @@ case "openDataDir": OpenFolderPath(Program.DataDir); break;
                     case "setPrefs": DoSetPrefs(Str(dict, "json")); break;
                     case "recent": DoRecent(dict); break;
                     case "confirm":
-                        var ok = MessageBox.Show(Str(dict, "message"), "MarkEdit",
+                        var ok = MessageBox.Show(Str(dict, "message"), "Lanyu",
                             MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK;
                         Post(new { type = "confirm", id = Str(dict, "id"), ok = ok });
                         break;
                     case "alert":
-                        MessageBox.Show(Str(dict, "message"), "MarkEdit");
+                        MessageBox.Show(Str(dict, "message"), "Lanyu");
                         break;
                     case "openExternal": OpenExternal(Str(dict, "url")); break;
                     case "reveal": Reveal(Str(dict, "path")); break;
@@ -478,7 +478,7 @@ case "openDataDir": OpenFolderPath(Program.DataDir); break;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("打开失败：" + ex.Message, "MarkEdit");
+                MessageBox.Show("打开失败：" + ex.Message, "Lanyu");
             }
         }
 
@@ -536,7 +536,7 @@ case "openDataDir": OpenFolderPath(Program.DataDir); break;
                     File.WriteAllText(dlg.FileName, content, new UTF8Encoding(false));
                     Post(new { type = "exported", path = dlg.FileName });
                 }
-                catch (Exception ex) { MessageBox.Show(ex.Message, "MarkEdit"); }
+                catch (Exception ex) { MessageBox.Show(ex.Message, "Lanyu"); }
             }
         }
 
@@ -555,7 +555,7 @@ case "openDataDir": OpenFolderPath(Program.DataDir); break;
                     File.WriteAllText(dlg.FileName, html, new UTF8Encoding(false));
                     Post(new { type = "exported", path = dlg.FileName });
                 }
-                catch (Exception ex) { MessageBox.Show(ex.Message, "MarkEdit"); }
+                catch (Exception ex) { MessageBox.Show(ex.Message, "Lanyu"); }
             }
         }
 
@@ -919,16 +919,16 @@ private void OpenFolderPath(string path)
                 var exe = Application.ExecutablePath;
                 var cmd = "\"" + exe + "\" \"%1\"";
 
-                using (var prog = Registry.CurrentUser.CreateSubKey(@"Software\Classes\MarkEdit.md"))
+                using (var prog = Registry.CurrentUser.CreateSubKey(@"Software\Classes\Lanyu.md"))
                 {
                     changed |= SetIfChanged(prog, null, "Markdown 文档");
                     using (var ico = prog.CreateSubKey("DefaultIcon")) changed |= SetIfChanged(ico, null, exe + ",0");
                     using (var c2 = prog.CreateSubKey(@"shell\open\command")) changed |= SetIfChanged(c2, null, cmd);
                 }
 
-                using (var app = Registry.CurrentUser.CreateSubKey(@"Software\Classes\Applications\MarkEdit.exe"))
+                using (var app = Registry.CurrentUser.CreateSubKey(@"Software\Classes\Applications\Lanyu.exe"))
                 {
-                    changed |= SetIfChanged(app, "FriendlyAppName", "MarkEdit");
+                    changed |= SetIfChanged(app, "FriendlyAppName", "Lanyu");
                     using (var ico = app.CreateSubKey("DefaultIcon")) changed |= SetIfChanged(ico, null, exe + ",0");
                     using (var c2 = app.CreateSubKey(@"shell\open\command")) changed |= SetIfChanged(c2, null, cmd);
                     using (var st = app.CreateSubKey("SupportedTypes"))
@@ -943,7 +943,7 @@ private void OpenFolderPath(string path)
                 foreach (var ext in new[] { ".md", ".markdown", ".mdown", ".txt" })
                 {
                     using (var ow = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + ext + @"\OpenWithProgids"))
-                        changed |= SetIfChanged(ow, "MarkEdit.md", new byte[0]);
+                        changed |= SetIfChanged(ow, "Lanyu.md", new byte[0]);
                 }
 
                 // 让 .md 默认由我们打开（仅当没有指定过、或已经是我们时；不抢用户已有的选择）
@@ -952,11 +952,24 @@ private void OpenFolderPath(string path)
                     using (var k = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + ext))
                     {
                         var cur = k.GetValue(null) as string;
-                        if (string.IsNullOrEmpty(cur) || cur == "MarkEdit.md")
-                            changed |= SetIfChanged(k, null, "MarkEdit.md");
+                        if (string.IsNullOrEmpty(cur) || cur == "Lanyu.md" || cur == "MarkEdit.md")
+                            changed |= SetIfChanged(k, null, "Lanyu.md");
                     }
                 }
 
+                // 改名遗留：清掉旧的 MarkEdit.md / Applications\MarkEdit.exe
+                foreach (var legacy in new[] { @"Software\Classes\MarkEdit.md", @"Software\Classes\Applications\MarkEdit.exe" })
+                {
+                    try
+                    {
+                        if (Registry.CurrentUser.OpenSubKey(legacy) != null)
+                        {
+                            Registry.CurrentUser.DeleteSubKeyTree(legacy, false);
+                            changed = true;
+                        }
+                    }
+                    catch { }
+                }
                 // 关键：只有真的改了才通知资源管理器，否则每次启动桌面图标都会重载一遍
                 if (changed) SHChangeNotify(SHCNE_ASSOCCHANGED, 0, IntPtr.Zero, IntPtr.Zero);
                 return true;
@@ -968,7 +981,7 @@ private void OpenFolderPath(string path)
             }
         }
 
-        /// <summary>强制把 .md/.markdown/.mdown 的默认程序设为 MarkEdit（会清掉资源管理器的 UserChoice）。</summary>
+        /// <summary>强制把 .md/.markdown/.mdown 的默认程序设为 Lanyu（会清掉资源管理器的 UserChoice）。</summary>
         internal static bool ForceDefault()
         {
             try
@@ -982,8 +995,8 @@ private void OpenFolderPath(string path)
                     }
                     catch { }
                     using (var k = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + ext))
-                        k.SetValue(null, "MarkEdit.md");
-                    using (var prog = Registry.CurrentUser.CreateSubKey(@"Software\Classes\MarkEdit.md\DefaultIcon"))
+                        k.SetValue(null, "Lanyu.md");
+                    using (var prog = Registry.CurrentUser.CreateSubKey(@"Software\Classes\Lanyu.md\DefaultIcon"))
                         prog.SetValue(null, Application.ExecutablePath + ",0");
                 }
                 SHChangeNotify(SHCNE_ASSOCCHANGED, 0, IntPtr.Zero, IntPtr.Zero);

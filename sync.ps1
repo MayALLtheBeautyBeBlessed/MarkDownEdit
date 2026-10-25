@@ -1,4 +1,4 @@
-﻿# MarkEdit 同步脚本
+﻿# Lanyu 同步脚本
 # 用法：  powershell -File sync.ps1 "本次改了什么"
 #        省略说明时自动用时间戳
 #

@@ -1,10 +1,10 @@
-# MarkEdit 6.6
+# Lanyu 6.6
 
 Typora 风格的 Windows Markdown 编辑器。单文件、离线，解压即用（需要 WebView2 运行时，Win10/11 自带）。
 
 ## 下载
 
-- **MarkEdit-6.6-win64.zip**（768 KB）— 解压后运行 `MarkEdit.exe`
+- **Lanyu-6.6-win64.zip**（768 KB）— 解压后运行 `Lanyu.exe`
 
 首次运行会在 exe 同级目录建 `data\` 存配置。**不要把 exe 单独拖出文件夹**，也不要在压缩包里直接双击（那样配置会写到临时目录，关掉就没了）。
 

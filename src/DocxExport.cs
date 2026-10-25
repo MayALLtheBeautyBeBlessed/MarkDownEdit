@@ -9,7 +9,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Web.Script.Serialization;
 
-namespace MarkEdit
+namespace Lanyu
 {
     /// <summary>把 ExportModel（JS 生成的结构化文档）写成真正的 .docx。</summary>
     internal static class DocxExport
@@ -140,7 +140,7 @@ namespace MarkEdit
                    "<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" " +
                    "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" " +
                    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                   "<dc:creator>MarkEdit</dc:creator><cp:lastModifiedBy>MarkEdit</cp:lastModifiedBy>" +
+                   "<dc:creator>Lanyu</dc:creator><cp:lastModifiedBy>Lanyu</cp:lastModifiedBy>" +
                    "<dcterms:created xsi:type=\"dcterms:W3CDTF\">" + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</dcterms:created>" +
                    "<dcterms:modified xsi:type=\"dcterms:W3CDTF\">" + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</dcterms:modified>" +
                    "</cp:coreProperties>";
@@ -150,7 +150,7 @@ namespace MarkEdit
         {
             return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                    "<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\">" +
-                   "<Application>MarkEdit</Application><AppVersion>1.2</AppVersion></Properties>";
+                   "<Application>Lanyu</Application><AppVersion>1.2</AppVersion></Properties>";
         }
 
         private static string Styles()

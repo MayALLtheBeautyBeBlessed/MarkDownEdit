@@ -1,4 +1,4 @@
-﻿# 发 GitHub Release（用法：$env:GH_TOKEN='xxx'; powershell -File tools\release.ps1 -Tag v6.6 -Name "MarkEdit 6.6" -File "F:\MarkDownEdit\dist\MarkEdit-6.6-win64.zip" -Notes "F:\MarkDownEdit\tools\release-notes.md"）
+﻿# 发 GitHub Release（用法：$env:GH_TOKEN='xxx'; powershell -File tools\release.ps1 -Tag v6.6 -Name "Lanyu 6.6" -File "F:\MarkDownEdit\dist\Lanyu-6.6-win64.zip" -Notes "F:\MarkDownEdit\tools\release-notes.md"）
 
 param(
     [Parameter(Mandatory = $true)][string]$Tag,
@@ -16,7 +16,7 @@ if (-not (Test-Path $File)) { Write-Host "找不到要上传的文件：$File" -
 $Headers = @{
     'Authorization'        = "Bearer $Token"
     'Accept'               = 'application/vnd.github+json'
-    'User-Agent'           = 'MarkEdit-release'
+    'User-Agent'           = 'Lanyu-release'
     'X-GitHub-Api-Version' = '2022-11-28'
 }
 
@@ -44,7 +44,7 @@ Write-Host "上传 $assetName ..."
 $bin = [IO.File]::ReadAllBytes($File)
 $asset = Invoke-RestMethod -Method Post -Uri $uploadUrl -Headers @{
     'Authorization' = "Bearer $Token"
-    'User-Agent'    = 'MarkEdit-release'
+    'User-Agent'    = 'Lanyu-release'
     'Content-Type'  = 'application/zip'
 } -Body $bin
 

@@ -1,5 +1,5 @@
 ﻿/* ============================================================
-   MarkEdit · 菜单栏（Typora 风格）
+   Lanyu · 菜单栏（Typora 风格）
    ============================================================ */
 (function (global) {
   'use strict';
@@ -125,7 +125,7 @@
       title: '帮助',
       items: [
         { label: '快捷键', key: 'F1', act: 'help' },
-        { label: '关于 MarkEdit', act: 'about' }
+        { label: '关于 Lanyu', act: 'about' }
       ]
     }
   ];
