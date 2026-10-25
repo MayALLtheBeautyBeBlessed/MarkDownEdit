@@ -712,3 +712,7 @@ MarkDownEdit\
 **便携性**：整个文件夹拷走即可迁移；放在无写入权限的目录时会改用 `%LOCALAPPDATA%\MarkEdit`。
 **我说你**
 
+## 许可
+
+- 本项目代码：[MIT](LICENSE)
+- 第三方组件（KaTeX 等）：[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
