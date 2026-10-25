@@ -1,5 +1,9 @@
 ﻿# MarkEdit 6.6
 
+> 一个安静的 Markdown 编辑器。单文件、离线、解压即用。
+
+**[下载最新版](https://github.com/MayALLtheBeautyBeBlessed/MarkDownEdit/releases/latest)** · 源码在 `src/` `web/`，构建方式见文末
+
 一个安静的 Markdown 编辑器，Windows 原生窗口 + WebView2 内核，**Typora 式的即时渲染**：光标所在的段落显示原始 Markdown，其余段落直接显示排版结果。
 
 双击 `MarkEdit.exe` 即可使用，**免安装、不联网、不加载任何远程资源**（公式的 KaTeX 也是本地内置的）。
