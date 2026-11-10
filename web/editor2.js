@@ -767,7 +767,13 @@
       let b = this.currentBlock();
       if (b) { this._lastBlock = b; return b; }
       b = this._lastBlock;
-      if (!b || !this.root.contains(b)) b = this.root.lastElementChild;
+      if (!b || !this.root.contains(b)) {
+        b = this.root.lastElementChild;
+        // 尾块是空的（占位空行）→ 往上找最后一个有文字的块
+        let p = b;
+        while (p && p.textContent.trim() === '' && p.previousElementSibling) p = p.previousElementSibling;
+        if (p) b = p;
+      }
       if (!b) {
         b = document.createElement('p');
         b.innerHTML = '<br>';
@@ -854,6 +860,20 @@
         if (fb) targets = [fb];
       }
       if (!targets.length) return false;
+
+      // 空段落（文档末尾的占位空行）不承载标题：换成上方最近的非空块
+      const hasText = el => el && el.textContent.trim().length > 0;
+      targets = targets.map(el => {
+        if (hasText(el)) return el;
+        let sib = el.previousElementSibling;
+        while (sib && (!sib.matches || !sib.matches(BLOCK_SEL) || !hasText(sib))) sib = sib.previousElementSibling;
+        if (sib) return sib;
+        let nx = el.nextElementSibling;
+        while (nx && (!nx.matches || !nx.matches(BLOCK_SEL) || !hasText(nx))) nx = nx.nextElementSibling;
+        return nx || el;
+      });
+      targets = targets.filter((el, i) => targets.indexOf(el) === i);
+
       const tag = level === 0 ? 'P' : 'H' + level;
 
       // 记住光标在「哪个块的第几个字符」
