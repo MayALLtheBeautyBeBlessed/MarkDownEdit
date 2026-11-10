@@ -264,6 +264,19 @@
       this._prevCaret = null;
       this.tableEdit = null;
       this.imageSel = null;
+
+      // 焦点归位：打开文档后把光标放进第一块，
+      // 否则 activeElement 停在 BODY，菜单/快捷键只能回落到“最后一个块”
+      try {
+        if (!this.root.contains(document.activeElement)) {
+          const first = this.root.firstElementChild;
+          if (first) {
+            first.focus();
+            this.setCaretStart(first);
+            this._lastBlock = first;
+          }
+        }
+      } catch (e) { }
     }
 
     getContent() {
@@ -618,7 +631,24 @@
     currentBlock() {
       const sel = window.getSelection();
       if (!sel.rangeCount) return null;
-      return blockOf(sel.focusNode);
+      const direct = blockOf(sel.focusNode);
+      if (direct) return direct;
+
+      // 光标停在 #wyDoc 本身（偏移 = 子节点序号）时，解析到相邻的块
+      const node = sel.focusNode;
+      const off = sel.focusOffset || 0;
+      if (node === this.root) {
+        for (let i = Math.min(off, this.root.children.length - 1); i >= 0; i--) {
+          const el = this.root.children[i];
+          if (el && el.matches && el.matches(BLOCK_SEL)) return el;
+        }
+        for (let i = off + 1; i < this.root.children.length; i++) {
+          const el = this.root.children[i];
+          if (el && el.matches && el.matches(BLOCK_SEL)) return el;
+        }
+      }
+      // 其它情况（选区端点落在块之间）：用 anchor 侧再试一次
+      return blockOf(sel.anchorNode);
     }
 
     setCaretStart(el) {
@@ -772,11 +802,12 @@
       const map = {
         h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P'
       };
-      if (map[name]) return this.setBlockTag(blk, map[name]);
+      // 标题/正文：和快捷键走同一条路径（支持多块选中，光标不跳）
+      if (map[name]) return this.applyHeading(name === 'p' ? 0 : +name[1]);
       if (name === 'headingUp' || name === 'headingDown') {
         const cur = /^H([1-6])$/.test(blk.tagName) ? +blk.tagName[1] : 0;
         const next = name === 'headingUp' ? Math.max(1, (cur || 7) - 1) : Math.min(6, (cur || 0) + 1);
-        return this.setBlockTag(blk, 'H' + next);
+        return this.applyHeading(next);
       }
       if (name === 'quote') return this.wrapBlock(blk, 'blockquote');
       if (name === 'ul') return this.toList(blk, 'UL');
@@ -817,7 +848,11 @@
 
     /* level: 0 = 正文, 1..6 = 标题 */
     applyHeading(level) {
-      const targets = this.blocksInSelection();
+      let targets = this.blocksInSelection();
+      if (!targets.length) {
+        const fb = this.ensureCaret();
+        if (fb) targets = [fb];
+      }
       if (!targets.length) return false;
       const tag = level === 0 ? 'P' : 'H' + level;
 
