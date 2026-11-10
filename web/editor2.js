@@ -648,6 +648,19 @@
       if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) this.redo(); else this.undo(); return; }
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); this.redo(); return; }
 
+      // Ctrl+0..6 在这层直接处理：不依赖上层键位表，也不受 defaultPrevented 影响
+      if (mod && !e.altKey && !e.shiftKey) {
+        let digit = null;
+        if (/^[0-6]$/.test(e.key)) digit = e.key;
+        else if (/^(Digit|Numpad)[0-6]$/.test(e.code || '')) digit = (e.code.match(/([0-6])$/) || [])[1];
+        else if (e.keyCode >= 48 && e.keyCode <= 54) digit = String(e.keyCode - 48);
+        if (digit !== null && digit !== undefined) {
+          e.preventDefault();
+          this.applyHeading(+digit);
+          return;
+        }
+      }
+
       const blk = this.currentBlock();
       if (!blk) return;
 
@@ -781,6 +794,72 @@
       if (name === 'paraBelow') return this.insertParagraph(blk, 1);
       if (name === 'indent') { document.execCommand('indent'); this.emitNow(); return; }
       if (name === 'outdent') { document.execCommand('outdent'); this.emitNow(); return; }
+    }
+
+    /* --- 标题：编辑器内直接处理，不依赖上层键位表 --- */
+    blocksInSelection() {
+      const sel = window.getSelection();
+      const out = [];
+      if (!sel.rangeCount) return out;
+      const r = sel.getRangeAt(0);
+      Array.prototype.forEach.call(this.root.children, el => {
+        if (!el.matches || !el.matches(BLOCK_SEL)) return;
+        if (el.tagName === 'TABLE') return;              // 表格整块不参与
+        if (sel.isCollapsed) { if (el.contains(sel.focusNode)) out.push(el); }
+        else if (r.intersectsNode(el)) out.push(el);
+      });
+      if (!out.length) {
+        const b = this.currentBlock();
+        if (b && b.tagName !== 'TABLE') out.push(b);
+      }
+      return out;
+    }
+
+    /* level: 0 = 正文, 1..6 = 标题 */
+    applyHeading(level) {
+      const targets = this.blocksInSelection();
+      if (!targets.length) return false;
+      const tag = level === 0 ? 'P' : 'H' + level;
+
+      // 记住光标在「哪个块的第几个字符」
+      const sel = window.getSelection();
+      const focusEl = (sel.focusNode && sel.focusNode.nodeType === 1 ? sel.focusNode : sel.focusNode && sel.focusNode.parentNode);
+      const focusBlock = focusEl && focusEl.closest ? focusEl.closest(BLOCK_SEL) : null;
+      let focusIdx = focusBlock ? targets.indexOf(focusBlock) : -1;
+      if (focusIdx < 0) focusIdx = targets.length - 1;
+      let offset = null;
+      if (focusBlock && targets[focusIdx]) {
+        try {
+          const rr = document.createRange();
+          rr.setStart(targets[focusIdx], 0);
+          rr.setEnd(sel.focusNode, sel.focusOffset || 0);
+          offset = rr.toString().length;
+        } catch (e) { offset = null; }
+      }
+
+      this.snapshot();
+      const replaced = [];
+      targets.forEach(el => {
+        if (el.tagName === tag) { replaced.push(null); return; }
+        const nd = document.createElement(tag);
+        nd.innerHTML = el.innerHTML || '<br>';
+        el.replaceWith(nd);
+        replaced.push(nd);
+      });
+
+      // 光标放回原来的位置
+      let caretEl = replaced[focusIdx] || targets[focusIdx];
+      if (caretEl && caretEl.isConnected) {
+        try { caretEl.focus(); } catch (e) { }
+        const off = offset == null ? 0 : offset;
+        this.setCaretOffsetIn(caretEl, off);
+        this._lastBlock = caretEl;
+      }
+
+      this.invalidate();
+      this.ensureTrailing();
+      this.emitNow();
+      return true;
     }
 
     setBlockTag(blk, tag) {
